@@ -1,0 +1,182 @@
+# --------------------------------------------------- The tables
+
+DROP TABLE IF EXISTS "Garages"."Garage" CASCADE;
+DROP TABLE IF EXISTS "Garages"."Vehicle" CASCADE;
+DROP TABLE IF EXISTS "Garages"."Customer" CASCADE;
+DROP TABLE IF EXISTS "Garages"."RepairFacts" CASCADE;
+
+CREATE TABLE IF NOT EXISTS "Garages"."Garage"(
+	idg SERIAL NOT NULL,
+	gtype VARCHAR(50),
+	city VARCHAR(50),
+	region VARCHAR(50),
+PRIMARY KEY(idg)
+);
+
+CREATE TABLE IF NOT EXISTS "Garages"."Vehicle"(
+	idv SERIAL NOT NULL,
+	model VARCHAR(50),
+	brand VARCHAR(50),
+PRIMARY KEY(idv)
+);
+
+CREATE TABLE IF NOT EXISTS "Garages"."Customer"(
+	idc SERIAL NOT NULL,
+	cname VARCHAR(50),
+	surname VARCHAR(50),
+	gender VARCHAR(50),
+	birth_date DATE,
+	city VARCHAR(50),
+	region VARCHAR(50),
+PRIMARY KEY(idc)
+);
+
+CREATE TABLE IF NOT EXISTS "Garages"."RepairFacts"(
+	idr SERIAL NOT NULL,
+	idg INT NOT NULL,
+	idv INT NOT NULL,
+	idc INT NOT NULL,
+	repaird DATE,
+	revenue INT,
+PRIMARY KEY(idr),
+FOREIGN KEY(idg) REFERENCES "Garages"."Garage"(idg) ON DELETE CASCADE,
+FOREIGN KEY(idv) REFERENCES "Garages"."Vehicle"(idv) ON DELETE CASCADE,
+FOREIGN KEY(idc) REFERENCES "Garages"."Customer"(idc) ON DELETE CASCADE
+);
+
+# --------------------------------------------------------- Group by rollup, city and regions garages COUNT
+
+SELECT 
+	ga.idg,
+	ga.city,
+	ga.region,
+	COUNT(rp.revenue)
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.region, ga.city, ga.idg);
+
+# --------------------------------------------------------- Group by rollup type garages COUNT
+
+SELECT 
+	ga.idg,
+	ga.gtype,  
+	COUNT(rp.revenue)
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.gtype, ga.idg);
+
+# --------------------------------------------------------- Group by rollup city regions customers COUNT
+
+SELECT 
+	cu.idc,
+	cu.city, 
+	cu.region, 
+	COUNT(rp.revenue)
+FROM "Garages"."Customer" cu
+JOIN "Garages"."RepairFacts" rp ON cu.idc = rp.idc
+GROUP BY ROLLUP (cu.region,cu.city,cu.idc);
+
+# --------------------------------------------------------- Group by rollup vehicles, model brand COUNT
+
+SELECT
+	ve.idv,
+	ve.model,
+	ve.brand,
+	COUNT(rp.revenue)
+FROM "Garages"."Vehicle" ve
+JOIN "Garages"."RepairFacts" rp ON ve.idv = rp.idv
+GROUP BY ROLLUP(ve.brand, ve.model, ve.idv);
+
+# ---------------------------------------------------------------------------------------------------------------------------------
+
+# --------------------------------------------------------- Group by rollup, city and regions garages SUM
+
+SELECT 
+	ga.idg,
+	ga.city,
+	ga.region,
+	SUM(rp.revenue)
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.region, ga.city, ga.idg);
+
+# --------------------------------------------------------- Group by rollup type garages SUM
+
+SELECT 
+	ga.idg,
+	ga.gtype,  
+	SUM(rp.revenue)
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.gtype, ga.idg);
+
+# --------------------------------------------------------- Group by rollup city regions customers SUM
+
+SELECT 
+	cu.idc,
+	cu.city, 
+	cu.region, 
+	SUM(rp.revenue)
+FROM "Garages"."Customer" cu
+JOIN "Garages"."RepairFacts" rp ON cu.idc = rp.idc
+GROUP BY ROLLUP (cu.region,cu.city,cu.idc);
+
+# --------------------------------------------------------- Group by rollup vehicles, model brand SUM
+
+SELECT
+	ve.idv,
+	ve.model,
+	ve.brand,
+	SUM(rp.revenue)
+FROM "Garages"."Vehicle" ve
+JOIN "Garages"."RepairFacts" rp ON ve.idv = rp.idv
+GROUP BY ROLLUP(ve.brand, ve.model, ve.idv);
+
+# --------------------------------------------------------------------------------------------------------------------- AVERAGE
+
+# --------------------------------------------------------- Group by rollup, city and regions garages AVERAGE
+
+
+SELECT 
+	ga.idg,
+	ga.city,
+	ga.region,
+	ROUND(AVG(rp.revenue), 2) AS average
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.region, ga.city, ga.idg);
+
+# --------------------------------------------------------- Group by rollup type garages AVERAGE
+
+SELECT 
+	ga.idg,
+	ga.gtype,  
+	ROUND(AVG(rp.revenue), 2) AS average
+FROM "Garages"."Garage" ga
+JOIN "Garages"."RepairFacts" rp ON ga.idg = rp.idg
+GROUP BY ROLLUP (ga.gtype, ga.idg);
+# --------------------------------------------------------- Group by rollup city regions customers AVERAGE
+
+SELECT 
+	cu.idc,
+	cu.city, 
+	cu.region, 
+	ROUND(AVG(rp.revenue), 2) AS average
+FROM "Garages"."Customer" cu
+JOIN "Garages"."RepairFacts" rp ON cu.idc = rp.idc
+GROUP BY ROLLUP (cu.region,cu.city,cu.idc);
+
+# --------------------------------------------------------- Group by rollup vehicles, model brand AVERAGE
+
+SELECT
+	ve.idv,
+	ve.model,
+	ve.brand,
+	ROUND(AVG(rp.revenue), 2) AS average
+FROM "Garages"."Vehicle" ve
+JOIN "Garages"."RepairFacts" rp ON ve.idv = rp.idv
+GROUP BY ROLLUP(ve.brand, ve.model, ve.idv);
+
+
+
+
